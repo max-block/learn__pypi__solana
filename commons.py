@@ -14,12 +14,14 @@ from solana.rpc.types import TokenAccountOpts
 def get_account(private_key_base58: str) -> Account:
     return Account(base58.b58decode(private_key_base58)[:32])
 
+
 def get_keypair(private_key_base58: str) -> Keypair:
     return Keypair(PrivateKey(base58.b58decode(private_key_base58)[:32]))
 
 
 def get_token_account(client: Client, token_mint: str, wallet_account: str) -> Optional[PublicKey]:
     res = client.get_token_accounts_by_owner(PublicKey(wallet_account), TokenAccountOpts(mint=PublicKey(token_mint)))
+    print(res)
     pubkey = pydash.get(res, "result.value.0.pubkey")
     if pubkey:
         return PublicKey(pubkey)

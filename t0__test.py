@@ -1,9 +1,23 @@
-import base58
+import os
+from pprint import pprint
 
-arr = [221,6,67,216,245,92,81,92,201,177,81,204,88,172,26,210,246,167,69,116,45,234,150,205,78,6,58,167,185,155,11,243,48,206,4,238,135,43,59,114,197,90,141,78,140,162,173,79,106,67,129,174,214,148,208,214,163,162,151,111,26,49,81,65]
+from dotenv import load_dotenv
+from solana.publickey import PublicKey
+from solana.rpc.api import Client
+from solana.rpc.types import TokenAccountOpts
 
+load_dotenv()
+ENDPOINT = os.getenv("ENDPOINT")
+ADDRESS_0 = os.getenv("ADDRESS_0")
+TOKEN = os.getenv("TOKEN")
 
-r = base58.b58encode(bytes(arr))
-print(r.decode())
+client = Client(ENDPOINT)
+# res = client.get_token_accounts_by_owner(PublicKey(ADDRESS_0), TokenAccountOpts(mint=PublicKey(TOKEN)))
+# pprint(res)
+#
+#
+#
+# res = client.get_token_account_balance(PublicKey("Fti7vpEmV6V9okZSdyaqiHeFKPoSMZ1fhXd8qgKzbqan"))
+# pprint(res)
 
-
+pprint(client.get_token_accounts_by_owner(PublicKey(ADDRESS_0), TokenAccountOpts(mint=PublicKey(TOKEN))))

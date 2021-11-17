@@ -18,21 +18,23 @@ TOKEN = os.getenv("TOKEN")
 
 client = Client(ENDPOINT)
 
-acc = commons.get_account(PRIVATE_KEY)
+acc = commons.get_keypair(PRIVATE_KEY)
+
 
 from_token_pubkey = commons.get_token_account(client, TOKEN, FROM_WALLET_ACCOUNT)
 
 dest_address = commons.get_token_account(client, TOKEN, TO_WALLET_ACCOUNT)
+print(dest_address)
 
-tx = Transaction(fee_payer=acc.public_key(), recent_blockhash=commons.get_recent_blockhash(client))
+tx = Transaction(fee_payer=acc.public_key, recent_blockhash=commons.get_recent_blockhash(client))
 tx.add(
     transfer(
         TransferParams(
             program_id=TOKEN_PROGRAM_ID,
             source=from_token_pubkey,
             dest=dest_address,
-            owner=acc.public_key(),
-            amount=23 * 10 ** 9,
+            owner=acc.public_key,
+            amount=2 * 10 ** 6,  # 2 usdt
         )
     )
 )
