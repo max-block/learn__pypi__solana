@@ -12,7 +12,7 @@ load_dotenv()
 
 from_address = os.getenv("ADDRESS_0")
 private_key = os.getenv("PRIVATE_KEY_0")
-to_address = os.getenv("ADDRESS_TMP")
+to_address = os.getenv("ADDRESS_1")
 endpoint = os.getenv("ENDPOINT")
 
 client = Client(endpoint)

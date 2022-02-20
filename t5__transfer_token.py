@@ -1,42 +1,47 @@
 import os
 
 from dotenv import load_dotenv
+from solana.publickey import PublicKey
 from solana.rpc.api import Client
-from solana.transaction import Transaction
+from spl.token.client import Token
 from spl.token.constants import TOKEN_PROGRAM_ID
-from spl.token.instructions import TransferParams, transfer
 
 import commons
 
 load_dotenv()
 
-FROM_WALLET_ACCOUNT = os.getenv("ADDRESS_0")
-PRIVATE_KEY = os.getenv("PRIVATE_KEY_0")
-TO_WALLET_ACCOUNT = os.getenv("ADDRESS_1")
+FROM_WALLET_ADDRESS = os.getenv("ADDRESS_0")
+TO_WALLET_ADDRESS = os.getenv("ADDRESS_1")
+PRIVATE_KEY_0 = os.getenv("PRIVATE_KEY_0")
 ENDPOINT = os.getenv("ENDPOINT")
 TOKEN = os.getenv("TOKEN")
 
-client = Client(ENDPOINT)
+acc = commons.get_keypair(PRIVATE_KEY_0)
 
-acc = commons.get_keypair(PRIVATE_KEY)
+token_client = Token(Client(ENDPOINT), PublicKey(TOKEN), program_id=TOKEN_PROGRAM_ID, payer=acc)
 
 
-from_token_pubkey = commons.get_token_account(client, TOKEN, FROM_WALLET_ACCOUNT)
+# get from_token_account
+res = token_client.get_accounts(PublicKey(FROM_WALLET_ADDRESS))
+token_accounts = res["result"]["value"]
+if len(token_accounts) > 1:
+    print("there are more than one token_account!")
+    exit(1)
+from_token_account = PublicKey(token_accounts[0]["pubkey"])
+print("from_token_account", from_token_account)
 
-dest_address = commons.get_token_account(client, TOKEN, TO_WALLET_ACCOUNT)
-print(dest_address)
 
-tx = Transaction(fee_payer=acc.public_key, recent_blockhash=commons.get_recent_blockhash(client))
-tx.add(
-    transfer(
-        TransferParams(
-            program_id=TOKEN_PROGRAM_ID,
-            source=from_token_pubkey,
-            dest=dest_address,
-            owner=acc.public_key,
-            amount=2 * 10 ** 6,  # 2 usdt
-        )
-    )
-)
-res = client.send_transaction(tx, acc)
+# get to_token_account
+res = token_client.get_accounts(PublicKey(TO_WALLET_ADDRESS))
+token_accounts = res["result"]["value"]
+if len(token_accounts) > 1:
+    print("there are more than one token_account!")
+    exit(1)
+elif len(token_accounts) == 1:
+    to_token_account = PublicKey(token_accounts[0]["pubkey"])
+else:  # create a new to_token_account
+    to_token_account = token_client.create_account(owner=PublicKey(TO_WALLET_ADDRESS))
+
+
+res = token_client.transfer(source=from_token_account, dest=to_token_account, owner=acc, amount=100000)
 print(res)
